@@ -253,6 +253,72 @@ def is_good_password(user, password, cur):
         print(e)
         return False
 
+def get_currval(cur):
+    try :
+        SQL = "SELECT last_value FROM {}_id_seq;".format(MESSAGE_TABLE)
+        cur.execute(SQL)
+        res = cur.fetchall()
+        return res[0][0]
+    except Exception as e:
+        print("Fatal error in get_currval().")
+        print(e)
+        return None
+
+def get_n_messages(n, chanel, cur):
+    # assertion
+    if n<=0 :
+        print("Wrong n parameter in get_n_messages()")
+        return None
+    # get last message id
+    currval = get_currval(cur)
+    # create empty list for messages
+    msg_list = list()
+
+    while(currval>0 and n > 0):
+        msg = get_message(currval, cur)
+        if get_msg_chanel(msg) == chanel:
+            msg_list.insert(0, msg)
+            n = n - 1
+        currval = currval - 1
+    return msg_list
+
+
+
+
+
+""" MESSAGE FUNCTION """
+
+def get_msg_chanel(msg):
+    try :
+        return msg[3]
+    except Exception as e :
+        print("Error in get_msg_chanel()")
+        print(e)
+        return None
+
+def get_msg_sender(msg):
+    try :
+        return msg[0]
+    except Exception as e :
+        print("Error in get_msg_sender()")
+        print(e)
+        return None
+
+def get_msg_text(msg):
+    try :
+        return msg[1]
+    except Exception as e :
+        print("Error in get_msg_text()")
+        print(e)
+        return None
+
+def get_msg_date(msg):
+    try :
+        return msg[2]
+    except Exception as e :
+        print("Error in get_msg_date()")
+        print(e)
+        return None
 
 # Test fonction
 if __name__=="__main__":
@@ -264,6 +330,8 @@ if __name__=="__main__":
     res = add_user[0] and res
     #try to add a message
     res = add_message("test", "rally", "principal", cur) and res
+    res = add_message("test2", "rally", "principal", cur) and res
+    res = add_message("test3", "rally", "principal", cur) and res
     #try is user exist
     res = not (is_user_exist("alexis", cur)) and res
     res = is_user_exist("rally", cur) and res
@@ -287,6 +355,11 @@ if __name__=="__main__":
     res = is_good_password('rally', '123', cur) and res
     res = not(is_good_password('rally', '12', cur)) and res # wrong password
     res = not(is_good_password('rall', '123', cur)) and res # wrong user
+    # Test get_currval()
+    currval = get_currval(cur)
+    res = currval==3 and res
+
+    print(get_n_messages(4, 'principal', cur))
 
     # test result
     print("\n##### Résulat du test : #####")
